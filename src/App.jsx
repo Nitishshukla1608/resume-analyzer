@@ -20,7 +20,7 @@ function App() {
       formData.append("resume", file);
 
       const res = await axios.post(
-        "http://localhost:5000/analyze",
+        "/api/analyze",
         formData
       );
 
