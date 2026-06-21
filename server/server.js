@@ -89,12 +89,13 @@ ${resumeText}
 );
 
 // Local machine only
-if (process.env.NODE_ENV !== "production") {
-  const PORT = 5000;
+// Start local server only
+const PORT = process.env.PORT || 5000;
 
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(
-      `Server running on ${PORT}`
+      `Server running on port ${PORT}`
     );
   });
 }
