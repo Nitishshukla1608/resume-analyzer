@@ -1,4 +1,8 @@
-require("dotenv").config();
+const path = require("path");
+
+require("dotenv").config({
+  path: path.resolve(__dirname, ".env"),
+});
 
 const express = require("express");
 const cors = require("cors");
@@ -15,21 +19,20 @@ app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
 });
-console.log("KEY:", process.env.GEMINI_API_KEY);
-console.log("LENGTH:", process.env.GEMINI_API_KEY?.length);
-// Check API key
-console.log("API KEY EXISTS:", !!process.env.GEMINI_API_KEY);
 
+// Create Gemini instance
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
+// Test route
 app.get("/", (req, res) => {
   res.send("Resume Analyzer API Running");
 });
 
+// Main API route
 app.post(
-  "/analyze",
+  "/api/analyze",
   upload.single("resume"),
   async (req, res) => {
     try {
@@ -46,12 +49,8 @@ app.post(
 
       // Extract PDF text
       const data = await pdf(req.file.buffer);
-      const resumeText = data.text;
 
-      console.log(
-        "Resume text length:",
-        resumeText.length
-      );
+      const resumeText = data.text;
 
       const prompt = `
 Analyze this resume and provide:
@@ -78,7 +77,6 @@ ${resumeText}
       });
 
     } catch (error) {
-      console.error("SERVER ERROR:");
       console.error(error);
 
       return res.status(500).json({
@@ -90,10 +88,16 @@ ${resumeText}
   }
 );
 
-const PORT = 5000;
+// Local machine only
+if (process.env.NODE_ENV !== "production") {
+  const PORT = 5000;
 
-app.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
-});
+  app.listen(PORT, () => {
+    console.log(
+      `Server running on ${PORT}`
+    );
+  });
+}
+
+// Required for Vercel
+module.exports = app;
